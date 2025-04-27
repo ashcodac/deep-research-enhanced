@@ -33,3 +33,10 @@ interface WebSearchResult {
   url: string;
   title?: string;
 }
+
+interface Chunk {
+  id: string;          // Unique ID for each chunk
+  fileName: string;     // Original file name
+  chunkIndex: number;   // Position of the chunk in the file
+  chunkText: string;    // Actual text of the chunk
+}

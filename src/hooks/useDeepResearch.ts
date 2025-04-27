@@ -10,6 +10,8 @@ import useWebSearch from "@/hooks/useWebSearch";
 import { useTaskStore } from "@/store/task";
 import { useHistoryStore } from "@/store/history";
 import { useSettingStore } from "@/store/setting";
+import { useChunksStore } from "@/store/chunksStore";
+import { useMemoryStore } from "@/store/memoryStore"; // 🚀 Import memory store
 import {
   getSystemPrompt,
   getOutputGuidelinesPrompt,
@@ -21,6 +23,7 @@ import {
   writeFinalReportPrompt,
   getSERPQuerySchema,
 } from "@/utils/deep-research";
+import { findClosestChunks } from "@/lib/ai";
 import { isNetworkingModel } from "@/utils/model";
 import { parseError } from "@/utils/error";
 import { pick, flat } from "radash";
@@ -67,23 +70,56 @@ function useDeepResearch() {
     const { language } = useSettingStore.getState();
     const { question } = useTaskStore.getState();
     const { thinkingModel } = getModel();
+    const { chunks } = useChunksStore.getState();
+    const { memories, addMemory } = useMemoryStore.getState(); // 🚀 Memory store
     setStatus(t("research.common.thinking"));
+
+    let memoryContext = "";
+
+    // 🚀 Step 1: Attach last few conversations
+    if (memories.length > 0) {
+      const recentMemories = memories.slice(-5); // Take last 5 (or less)
+      memoryContext += recentMemories
+        .map(
+          (m) =>
+            `Previous Q: ${m.question}\nPrevious A: ${m.answer}`
+        )
+        .join("\n\n") + "\n\n";
+    }
+
+    // 🚀 Step 2: Attach knowledge base matching chunks
+    if (chunks.length > 0) {
+      const relevantChunks = findClosestChunks(question, chunks);
+      memoryContext += relevantChunks
+        .map(
+          (c) =>
+            `From ${c.fileName}:\n${c.chunkText}`
+        )
+        .join("\n\n") + "\n\n";
+    }
+
     const result = streamText({
       model: createProvider(thinkingModel),
       system: getSystemPrompt(),
       prompt: [
+        memoryContext.length > 0 ? `Context:\n\n${memoryContext}` : "",
         generateQuestionsPrompt(question),
         getResponseLanguagePrompt(language),
       ].join("\n\n"),
       experimental_transform: smoothTextStream(),
       onError: handleError,
     });
+
     let content = "";
     taskStore.setQuestion(question);
+
     for await (const textPart of result.textStream) {
       content += textPart;
       taskStore.updateQuestions(content);
     }
+
+    // 🚀 Step 3: Save current question + answer into memory
+    addMemory({ question, answer: content });
   }
 
   async function runSearchTask(queries: SearchTask[]) {

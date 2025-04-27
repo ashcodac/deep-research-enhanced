@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { LoaderCircle, SquarePlus } from "lucide-react";
@@ -14,6 +15,8 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import FileUpload from "@/components/FileUpload";
+import OutputTemplateUpload from "@/components/OutputTemplateUpload"; // 🚀 NEW
 import useDeepResearch from "@/hooks/useDeepResearch";
 import useAccurateTimer from "@/hooks/useAccurateTimer";
 import useAiProvider from "@/hooks/useAiProvider";
@@ -21,6 +24,7 @@ import { useGlobalStore } from "@/store/global";
 import { useSettingStore } from "@/store/setting";
 import { useTaskStore } from "@/store/task";
 import { useHistoryStore } from "@/store/history";
+import { useUploadedFilesStore } from "@/store/uploadedFilesStore";
 
 const formSchema = z.object({
   topic: z.string().min(2),
@@ -37,6 +41,8 @@ function Topic() {
     stop: accurateTimerStop,
   } = useAccurateTimer();
   const [isThinking, setIsThinking] = useState<boolean>(false);
+  const { files } = useUploadedFilesStore();
+  const [templateFiles, setTemplateFiles] = useState<File[]>([]); // 🚀
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,7 +67,7 @@ function Topic() {
           form.setValue("topic", values.topic);
         }
         setQuestion(values.topic);
-        await askQuestions();
+        await askQuestions(files); // Knowledge Base files
       } finally {
         setIsThinking(false);
         accurateTimerStop();
@@ -78,6 +84,7 @@ function Topic() {
     if (id) update(id, backup());
     reset();
     form.reset();
+    setTemplateFiles([]); // 🚀 Clear Template Uploads on New Research
   }
 
   return (
@@ -90,15 +97,17 @@ function Topic() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => createNewResearch()}
+            onClick={createNewResearch}
             title={t("research.common.newResearch")}
           >
             <SquarePlus />
           </Button>
         </div>
       </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
+          {/* Research Topic Input */}
           <FormField
             control={form.control}
             name="topic"
@@ -117,7 +126,25 @@ function Topic() {
               </FormItem>
             )}
           />
-          <Button className="mt-4 w-full" disabled={isThinking} type="submit">
+
+          {/* Knowledge Base Upload */}
+          <div className="mt-6">
+            <FormLabel className="mb-2 font-semibold">
+              Selected Knowledge Base (Optional)
+            </FormLabel>
+            <FileUpload />
+          </div>
+
+          {/* Output Template Upload */}
+          <div className="mt-6">
+            <FormLabel className="mb-2 font-semibold">
+              Output Template (Optional)
+            </FormLabel>
+            <OutputTemplateUpload onFilesChange={(files) => setTemplateFiles(files)} />
+          </div>
+
+          {/* Submit Button */}
+          <Button className="mt-6 w-full" disabled={isThinking} type="submit">
             {isThinking ? (
               <>
                 <LoaderCircle className="animate-spin" />
