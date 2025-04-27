@@ -42,7 +42,6 @@ function Topic() {
   } = useAccurateTimer();
   const [isThinking, setIsThinking] = useState<boolean>(false);
   const { files } = useUploadedFilesStore();
-  const [templateFiles, setTemplateFiles] = useState<File[]>([]); // 🚀
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
