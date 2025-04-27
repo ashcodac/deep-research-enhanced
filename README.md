@@ -14,6 +14,14 @@
 
 </div>
 
+---
+
+> **✨ Enhanced Version:**  
+> Deep Research has been further enhanced by [Ashcodac (Ashish Sharma)](https://github.com/ashcodac).  
+> Enhancements include multi-file knowledge base upload, output template upload, memory store integration, dark mode fixes, UI/UX improvements, vector search upgrades, and mobile optimization — while preserving the original project philosophy.
+
+---
+
 **Lightning-Fast Deep Research Report**
 
 Deep Research uses a variety of powerful AI models to generate in-depth research reports in just a few minutes. It leverages advanced "Thinking" and "Flash" models, combined with an internet connection, to provide fast and insightful analysis on a variety of topics. **Your privacy is paramount - all data is processed and stored locally.**
@@ -34,6 +42,7 @@ Deep Research uses a variety of powerful AI models to generate in-depth research
 - **Multi-language Support**: English、简体中文.
 - **Built with Modern Technologies:** Developed using Next.js 15 and Shadcn UI, ensuring a modern, performant, and visually appealing user experience.
 - **MIT Licensed:** Open-source and freely available for personal and commercial use under the MIT License.
+
 
 ## 🎯 Roadmap
 
