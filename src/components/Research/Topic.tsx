@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import FileUpload from "@/components/FileUpload";
-import OutputTemplateUpload from "@/components/OutputTemplateUpload"; // 🚀 NEW
+import OutputTemplateUpload from "@/components/OutputTemplateUpload";
 import useDeepResearch from "@/hooks/useDeepResearch";
 import useAccurateTimer from "@/hooks/useAccurateTimer";
 import useAiProvider from "@/hooks/useAiProvider";
@@ -24,7 +24,6 @@ import { useGlobalStore } from "@/store/global";
 import { useSettingStore } from "@/store/setting";
 import { useTaskStore } from "@/store/task";
 import { useHistoryStore } from "@/store/history";
-import { useUploadedFilesStore } from "@/store/uploadedFilesStore";
 
 const formSchema = z.object({
   topic: z.string().min(2),
@@ -41,7 +40,6 @@ function Topic() {
     stop: accurateTimerStop,
   } = useAccurateTimer();
   const [isThinking, setIsThinking] = useState<boolean>(false);
-  const { files } = useUploadedFilesStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,6 +51,10 @@ function Topic() {
   useEffect(() => {
     form.setValue("topic", taskStore.question);
   }, [taskStore.question, form]);
+
+  function handleTemplateFilesChange(files: File[]) {
+    // Future logic for handling template files can be implemented here
+  }
 
   async function handleSubmit(values: z.infer<typeof formSchema>) {
     const { mode } = useSettingStore.getState();
@@ -66,7 +68,7 @@ function Topic() {
           form.setValue("topic", values.topic);
         }
         setQuestion(values.topic);
-        await askQuestions(files); // Knowledge Base files
+        await askQuestions();
       } finally {
         setIsThinking(false);
         accurateTimerStop();
@@ -83,7 +85,6 @@ function Topic() {
     if (id) update(id, backup());
     reset();
     form.reset();
-    setTemplateFiles([]); // 🚀 Clear Template Uploads on New Research
   }
 
   return (
@@ -106,7 +107,6 @@ function Topic() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
-          {/* Research Topic Input */}
           <FormField
             control={form.control}
             name="topic"
@@ -126,7 +126,6 @@ function Topic() {
             )}
           />
 
-          {/* Knowledge Base Upload */}
           <div className="mt-6">
             <FormLabel className="mb-2 font-semibold">
               Selected Knowledge Base (Optional)
@@ -134,15 +133,13 @@ function Topic() {
             <FileUpload />
           </div>
 
-          {/* Output Template Upload */}
           <div className="mt-6">
             <FormLabel className="mb-2 font-semibold">
               Output Template (Optional)
             </FormLabel>
-            <OutputTemplateUpload onFilesChange={(files) => setTemplateFiles(files)} />
+            <OutputTemplateUpload onFilesChange={handleTemplateFilesChange} />
           </div>
 
-          {/* Submit Button */}
           <Button className="mt-6 w-full" disabled={isThinking} type="submit">
             {isThinking ? (
               <>
