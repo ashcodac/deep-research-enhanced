@@ -53,7 +53,8 @@ function Topic() {
   }, [taskStore.question, form]);
 
   function handleTemplateFilesChange(files: File[]) {
-    // Future logic for handling template files can be implemented here
+    // Future extension point: handle uploaded template files if needed
+    console.log("Template files uploaded:", files);
   }
 
   async function handleSubmit(values: z.infer<typeof formSchema>) {
@@ -107,6 +108,7 @@ function Topic() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)}>
+          {/* Research Topic Input */}
           <FormField
             control={form.control}
             name="topic"
@@ -126,6 +128,7 @@ function Topic() {
             )}
           />
 
+          {/* Knowledge Base Upload */}
           <div className="mt-6">
             <FormLabel className="mb-2 font-semibold">
               Selected Knowledge Base (Optional)
@@ -133,6 +136,7 @@ function Topic() {
             <FileUpload />
           </div>
 
+          {/* Output Template Upload */}
           <div className="mt-6">
             <FormLabel className="mb-2 font-semibold">
               Output Template (Optional)
@@ -140,6 +144,7 @@ function Topic() {
             <OutputTemplateUpload onFilesChange={handleTemplateFilesChange} />
           </div>
 
+          {/* Submit Button */}
           <Button className="mt-6 w-full" disabled={isThinking} type="submit">
             {isThinking ? (
               <>
